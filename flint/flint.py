@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Iterable
 
 # local
+from .log import log
 from .error import wrap_exceptions
 from .files import FileSpecifier, FileUploadSpecifier, DEFAULT_IGNORE_PATTERNS
 
@@ -47,32 +48,32 @@ class Flint():
         if isinstance(path, str): path = Path(path)
         
         err, version_name = self.create_new_version()
-        if version_name is None: return print("[flint/deploy: failed_to_create_version]", err)
+        if version_name is None: return log("[flint/deploy: failed_to_create_version]", err)
 
-        print("[flint/deploy: version_created]", version_name)
+        log("[flint/deploy: version_created]", version_name)
         
         err, f_spec = self.get_file_specifier(path, ignore_regex)
-        if f_spec is None: return print("[flint/deploy: failed_to_get_file_specifier]", err)
+        if f_spec is None: return log("[flint/deploy: failed_to_get_file_specifier]", err)
 
-        print("[flint/deploy: file_specifier_created]", f_spec)
+        log("[flint/deploy: file_specifier_created]", f_spec)
 
         err, f_up_spec = self.populate_version_files(version_name, f_spec)
-        if f_up_spec is None: return print("[flint/deploy: failed_to_populate_version_files]", err)
+        if f_up_spec is None: return log("[flint/deploy: failed_to_populate_version_files]", err)
 
-        print("[flint/deploy: version_files_populated]", f_up_spec)
+        log("[flint/deploy: version_files_populated]", f_up_spec)
 
         err, _ = self.upload_files(f_up_spec)
-        if err: return print("[flint/deploy: failed_to_upload_files]", err)
+        if err: return log("[flint/deploy: failed_to_upload_files]", err)
 
         err, _ = self.finalize_version(version_name)
-        if err: return print("[flint/deploy: failed_to_finalize_version]", err)
+        if err: return log("[flint/deploy: failed_to_finalize_version]", err)
 
-        print("[flint/deploy: version_finalized]", version_name)
+        log("[flint/deploy: version_finalized]", version_name)
 
         err, response = self.release_version(version_name)
-        if response is None: return print("[flint/deploy: failed_to_release_version]", err)
+        if response is None: return log("[flint/deploy: failed_to_release_version]", err)
 
-        print("[flint/deploy: version_released]", response)
+        log("[flint/deploy: version_released]", response)
 
     """
     Below are methods corresponding to each step of the deployment process, as outlined in the Firebase Hosting REST API documentation. 
@@ -83,7 +84,7 @@ class Flint():
 
     use as such: ```python
     err, res = flint.some_method(...)
-    if res is None: print("An error occurred:", err)
+    if res is None: log("An error occurred:", err)
     ```
     """
 
@@ -140,7 +141,7 @@ class Flint():
 
             assert err is None, f"[{ctr} / {upload_spec.count}] {file_path}; {err.message}"
             
-            print("[flint/upload_files: uploaded_file]", f"[{ctr} / {upload_spec.count}] {file_path}")
+            log("[flint/upload_files: uploaded_file]", f"[{ctr} / {upload_spec.count}] {file_path}")
     
     @wrap_exceptions
     def finalize_version(self, version_name: str) -> None:

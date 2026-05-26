@@ -3,6 +3,8 @@ from typing import Iterable
 from pathlib import Path
 import json, re, gzip, hashlib
 
+from .log import log # local
+
 DEFAULT_IGNORE_PATTERNS = (r"(^|/)\.",) # ignore hidden files and directories by default
 
 # https://firebase.google.com/docs/hosting/api-deploy#specify-files
@@ -36,16 +38,16 @@ class FileSpecifier():
         for f in path.iterdir():
             relpath = f.relative_to(root).as_posix()
             if not force and self.is_node_ignored(relpath):
-                print("[flint/file_specifier]", f"ignoring {relpath} (matches ignore patterns)")
+                log("[flint/file_specifier]", f"ignoring {relpath} (matches ignore patterns)")
                 continue
 
             if f.is_dir(): self.add_directory(f, force, root)
             elif f.is_file(): self.add_file(relpath, f.read_bytes(), True) # we already did the check for this file
-            else: print("[flint/file_specifier]", f"skipping {relpath} (not a file or directory)")
+            else: log("[flint/file_specifier]", f"skipping {relpath} (not a file or directory)")
 
     def add_file(self, relpath: str, data: bytes, force: bool = False) -> None:
         if not force and self.is_node_ignored(relpath): 
-            return print("[flint/file_specifier]", f"ignoring {relpath} (matches ignore patterns)")
+            return log("[flint/file_specifier]", f"ignoring {relpath} (matches ignore patterns)")
         
         compressed_bytes = gzip.compress(data, mtime=0)
         file_hash = hashlib.sha256(compressed_bytes).hexdigest()

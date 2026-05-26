@@ -1,0 +1,1 @@
+log = lambda *args, **kwargs: print(*args, **kwargs, flush=True) # always flush for real-time visibility
