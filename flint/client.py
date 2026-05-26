@@ -41,7 +41,7 @@ class Files():
             relpath = f.relative_to(root).as_posix()
 
             bytes_ = f.read_bytes()
-            compressed_bytes = gzip.compress(bytes_)
+            compressed_bytes = gzip.compress(bytes_, mtime=0)
 
             hash_ = hashlib.sha256(compressed_bytes)
             hex_ = hash_.hexdigest()
