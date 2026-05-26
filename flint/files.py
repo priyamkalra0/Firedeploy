@@ -45,7 +45,7 @@ class FileSpecifier():
                 continue
 
             if f.is_dir(): self.add_directory(f, force, root)
-            elif f.is_file(): self.add_file(relpath, f.read_bytes(), True) # always force: we already did the check
+            elif f.is_file(): self.add_file(relpath, f.read_bytes(), True) # we already did the check for this file
             else: print("[flint/file_specifier]", f"skipping {relpath} (not a file or directory)")
 
     def add_file(self, relpath: str, data: bytes, force: bool = False) -> None:
@@ -55,8 +55,9 @@ class FileSpecifier():
         compressed_bytes = gzip.compress(data, mtime=0)
         file_hash = hashlib.sha256(compressed_bytes).hexdigest()
 
+        relpath = f"/{relpath}" # leading slash required by firebase
         self.m_hash_to_path[file_hash] = relpath
-        self.m_path_to_hash[f"/{relpath}"] = file_hash
+        self.m_path_to_hash[relpath] = file_hash
         self.m_hash_to_data[file_hash] = compressed_bytes
 
     def is_node_ignored(self, relpath: str) -> bool:

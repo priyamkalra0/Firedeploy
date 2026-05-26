@@ -82,7 +82,7 @@ class Flint():
     and the second element is the actual return value of the method if it succeeded (or `None` if an error occurred).
 
     use as such: ```python
-    err, res = self.some_method(...)
+    err, res = flint.some_method(...)
     if res is None: print("An error occurred:", err)
     ```
     """
@@ -96,11 +96,13 @@ class Flint():
                 .create(
                     parent=f"sites/{self.site_id}"
                 ).execute()
+        
+        assert version["status"] == "CREATED", str(version)
 
         return version["name"]
     
     @wrap_exceptions
-    def get_file_specifier(self, path: Path, ignore_regex: Iterable[str]) -> FileSpecifier:
+    def get_file_specifier(self, path: Path, ignore_regex: Iterable[str] = DEFAULT_IGNORE_PATTERNS) -> FileSpecifier:
         return FileSpecifier.from_directory(path, ignore_regex)
     
     @wrap_exceptions
@@ -118,8 +120,8 @@ class Flint():
     
     @wrap_exceptions
     def upload_file(self, upload_url: str, data: bytes) -> None:
-        response, content = self.m_http.request(
-            uri=f"{upload_url}",
+        response, content = self.m_http.request( # no discovery doc for this, so we use the underlying http client
+            uri=upload_url,
             method="POST",
             body=data,
             headers={"Content-Type": "application/octet-stream"}
@@ -157,7 +159,7 @@ class Flint():
     
     @wrap_exceptions
     def release_version(self, version_name: str) -> dict:
-        return           \
+        return               \
             self.m_service   \
             .sites()         \
             .releases()      \
