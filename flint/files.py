@@ -61,12 +61,12 @@ class FileSpecifier():
             for pattern in self.m_ignore_patterns
         )
 
-    def emplace(self, other: "FileSpecifier") -> None:
+    def emplace_spec(self, other: "FileSpecifier") -> None:
         self.m_path_to_hash = other.m_path_to_hash.copy()
         self.m_hash_to_data = other.m_hash_to_data.copy() 
         self.m_ignore_patterns = (*other.m_ignore_patterns,) # copy
 
-    def filter(self, keep_hashes: Iterable[str]) -> None:
+    def filter_by_hash(self, keep_hashes: Iterable[str]) -> None:
         keep_hashes = set(keep_hashes) # for constant lookup
 
         self.m_path_to_hash = {
@@ -91,8 +91,8 @@ class FileUploadSpecifier(FileSpecifier):
     def __init__(self, file_specifier: FileSpecifier, api_response: dict[str, str]):
         self.m_upload_url = api_response["uploadUrl"]
         required_files = api_response.get("uploadRequiredHashes", [])
-        self.emplace(file_specifier)
-        self.filter(required_files)
+        self.emplace_spec(file_specifier)
+        self.filter_by_hash(required_files)
         
     def __str__(self) -> str:
         return super().__str__().replace(">", f" upload_url={self.upload_url}>")

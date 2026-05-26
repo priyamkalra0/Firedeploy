@@ -55,7 +55,7 @@ class Flint():
         err, f_spec = self.get_file_specifier(path, ignore_regex)
         if f_spec is None: return log("[flint/deploy: failed_to_get_file_specifier]", err)
 
-        log("[flint/deploy: file_specifier_created]", f_spec)
+        log("[flint/deploy: file_specifier_created]", f"from path: \"{path}\"", f_spec)
 
         err, f_up_spec = self.populate_version_files(version_name, f_spec)
         if f_up_spec is None: return log("[flint/deploy: failed_to_populate_version_files]", err)
