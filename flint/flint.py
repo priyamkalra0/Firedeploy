@@ -55,14 +55,11 @@ class Flint():
         if f_spec is None: return print("[flint/deploy: failed_to_get_file_specifier]", err)
 
         print("[flint/deploy: file_specifier_created]", f_spec)
-        breakpoint()
 
         err, f_up_spec = self.populate_version_files(version_name, f_spec)
         if f_up_spec is None: return print("[flint/deploy: failed_to_populate_version_files]", err)
 
         print("[flint/deploy: version_files_populated]", f_up_spec)
-
-        breakpoint()
 
         err, _ = self.upload_files(f_up_spec)
         if err: return print("[flint/deploy: failed_to_upload_files]", err)
@@ -116,8 +113,6 @@ class Flint():
                     parent=version_name,
                     body={"files": file_spec.path_to_hash}
                 ).execute()
-
-        breakpoint()
         
         return FileUploadSpecifier(file_spec, response)
     
