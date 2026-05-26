@@ -10,10 +10,6 @@ class FileSpecifier():
     @property
     def path_to_hash(self) -> dict[str, str]:
         return self.m_path_to_hash
-    
-    @property
-    def hash_to_path(self) -> dict[str, str]:
-        return self.m_hash_to_path
 
     @property
     def hash_to_data(self) -> dict[str, bytes]:
@@ -25,7 +21,6 @@ class FileSpecifier():
 
     def __init__(self, ignore_regex: Iterable[str] = DEFAULT_IGNORE_PATTERNS) -> None:
         self.m_path_to_hash: dict[str, str] = {} # (k: file path, v: file hash)
-        self.m_hash_to_path: dict[str, str] = {} # (k: file hash, v: file path); for reverse lookup when uploading
         self.m_hash_to_data: dict[str, bytes] = {} # (k: file hash, v: file data)
         self.m_ignore_patterns = ignore_regex
     
@@ -55,9 +50,7 @@ class FileSpecifier():
         compressed_bytes = gzip.compress(data, mtime=0)
         file_hash = hashlib.sha256(compressed_bytes).hexdigest()
 
-        relpath = f"/{relpath}" # leading slash required by firebase
-        self.m_hash_to_path[file_hash] = relpath
-        self.m_path_to_hash[relpath] = file_hash
+        self.m_path_to_hash[f"/{relpath}"] = file_hash # leading slash required by firebase
         self.m_hash_to_data[file_hash] = compressed_bytes
 
     def is_node_ignored(self, relpath: str) -> bool:
@@ -68,21 +61,16 @@ class FileSpecifier():
 
     def emplace(self, other: "FileSpecifier") -> None:
         self.m_path_to_hash = other.m_path_to_hash.copy()
-        self.m_hash_to_path = other.m_hash_to_path.copy()
         self.m_hash_to_data = other.m_hash_to_data.copy() 
         self.m_ignore_patterns = (*other.m_ignore_patterns,) # copy
 
     def filter(self, keep_hashes: Iterable[str]) -> None:
-        keep_hashes = set(keep_hashes) # for faster lookup
-
-        self.m_hash_to_path = {
-            h: self.m_hash_to_path[h]
-            for h in keep_hashes
-        }
+        keep_hashes = set(keep_hashes) # for constant lookup
 
         self.m_path_to_hash = {
-            p: h for h, p in 
-            self.m_hash_to_path.items()
+            p: h for p, h 
+            in self.m_path_to_hash.items()
+            if h in keep_hashes
         }
 
         self.m_hash_to_data = {

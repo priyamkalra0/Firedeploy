@@ -131,13 +131,12 @@ class Flint():
 
     @wrap_exceptions
     def upload_files(self, upload_spec: FileUploadSpecifier) -> None:
-        for idx, file_hash in enumerate(upload_spec.hash_to_path):
-            ctr = idx + 1
+        for ctr, file_path in enumerate(upload_spec.path_to_hash, start=1):
+            file_hash = upload_spec.path_to_hash[file_path]
             err, _ = self.upload_file(
                 f"{upload_spec.upload_url}/{file_hash}", 
                 upload_spec.hash_to_data[file_hash]
             )
-            file_path = upload_spec.hash_to_path[file_hash]
 
             assert err is None, f"[{ctr} / {upload_spec.count}] {file_path}; {err.message}"
             
