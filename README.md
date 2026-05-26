@@ -28,7 +28,7 @@ flint.deploy("./public", ignore_regex=[*DEFAULT_IGNORE_PATTERNS, "data-archive"]
 
 The above snippet will create a new app version, add all files in the `./public` directory (recursively, filtering by `ignore_regex`) to that version, and deploy it. Logs are printed to the console like so:
 ```
-[version_created] sites/example-site/versions/5fe0860ba8caa67e
+[flint/deploy: version_created] sites/example-site/versions/5fe0860ba8caa67e
 [flint/file_specifier] ignoring .DS_Store (matches ignore patterns)
 [flint/file_specifier] ignoring .gitignore (matches ignore patterns)
 [flint/file_specifier] ignoring .git (matches ignore patterns)

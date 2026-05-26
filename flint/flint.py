@@ -47,9 +47,9 @@ class Flint():
         if isinstance(path, str): path = Path(path)
         
         err, version_name = self.create_new_version()
-        if version_name is None: return print("[failed_to_create_version]", err)
+        if version_name is None: return print("[flint/deploy: failed_to_create_version]", err)
 
-        print("[version_created]", version_name)
+        print("[flint/deploy: version_created]", version_name)
         
         err, f_spec = self.get_file_specifier(path, ignore_regex)
         if f_spec is None: return print("[flint/deploy: failed_to_get_file_specifier]", err)
