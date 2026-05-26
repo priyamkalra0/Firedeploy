@@ -1,7 +1,7 @@
 # stdlib
 from typing import Iterable
 from pathlib import Path
-import re, gzip, hashlib
+import json, re, gzip, hashlib
 
 DEFAULT_IGNORE_PATTERNS = (r"(^|/)\.",) # ignore hidden files and directories by default
 
@@ -78,9 +78,8 @@ class FileSpecifier():
             for h in keep_hashes
         }
 
-
     def __str__(self) -> str:
-        return f"<{self.__class__.__name__} count={self.count}, paths={tuple(self.path_to_hash)}>"
+        return f"<{self.__class__.__name__} count={self.count}, paths={_get_mapping_as_string(self.path_to_hash)}>"
     
 class FileUploadSpecifier(FileSpecifier):
     @property
@@ -94,4 +93,12 @@ class FileUploadSpecifier(FileSpecifier):
         self.filter(required_files)
         
     def __str__(self) -> str:
-        return f"<{self.__class__.__name__} upload_url={self.upload_url}, count={self.count}, paths={tuple(self.path_to_hash)}>"
+        return super().__str__().replace(">", f" upload_url={self.upload_url}>")
+
+def _get_mapping_as_string(mapping: dict) -> str:
+    # removes quotes around keys and values for readability
+    return \
+        json.dumps(
+            obj=mapping, 
+            indent=1
+        ).replace('"', '')
