@@ -157,8 +157,8 @@ class Flint():
         assert response["status"] == "FINALIZED", str(response)
     
     @wrap_exceptions
-    def release_version(self, version_name: str) -> dict:
-        return               \
+    def release_version(self, version_name: str) -> str:
+        response =           \
             self.m_service   \
             .sites()         \
             .releases()      \
@@ -166,3 +166,8 @@ class Flint():
                 parent=f"sites/{self.site_id}",
                 versionName=version_name,
             ).execute()
+
+        assert response.get("releaseTime") \
+                and response.get("name"), str(response)
+        
+        return response["name"]
