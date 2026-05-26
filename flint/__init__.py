@@ -1,1 +1,1 @@
-from .client import Certificate, Firebase, FirebaseError
+from .flint import Flint, Credentials, DEFAULT_IGNORE_PATTERNS, SCOPES
