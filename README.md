@@ -1,36 +1,45 @@
-# Flint is a simple & dumb python client around Google's [Firebase](https://web.app) API: Deploy to web-hosting with almost zero setup.
+# Flint is a simple python client around Google's [Firebase](https://web.app) Hosting API: Deploy to the web with almost zero setup.
+Made using Google's Firebase hosting [API documentation](https://firebase.google.com/docs/hosting/api-deploy).
+
 
 ## Usage
-You must generate a new private key (certificate.json) for the Firebase Admin SDK service account in your firebase project by clicking [here](https://console.firebase.google.com/u/0/project/_/settings/serviceaccounts).
-Copy the body of this JSON file and use it to authenticate your deployments when using Flint as shown below:
+You will need to generate a new private keyfile for the Firebase Admin SDK service account in your firebase project by clicking [here](https://console.firebase.google.com/u/0/project/_/settings/serviceaccounts).  See [this](https://firebase.google.com/docs/hosting/api-deploy#access-token) for more information.
 
 ```py
-from flint import Firebase, Certificate
-certificate = Certificate({ # this is the JSON body mentioned above
-    "type": "service_account",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "private_key": "-----BEGIN PRIVATE KEY-----\n[EXAMPLE]\n-----END PRIVATE KEY-----\n",
-    "client_email": "example@example.iam.gserviceaccount.com",
+from flint import Flint, Credentials, DEFAULT_IGNORE_PATTERNS
+
+credentials = Credentials.from_service_account_info({
+  "type": "service_account",
+  "project_id": "example-site",
+  "private_key_id": "EXAMPLE",
+  "private_key": "-----BEGIN PRIVATE KEY-----[EXAMPLE]-----END PRIVATE KEY-----\n",
+  "client_email": "example-site@example-site.iam.gserviceaccount.com",
+  "client_id": "EXAMPLE",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40example-site.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
 })
 
-firebase = Firebase("example", certificate)
-firebase.deploy("./public")
+flint = Flint(credentials)
+flint.deploy("./public", ignore_regex=[*DEFAULT_IGNORE_PATTERNS, "data-archive"])
 ```
 
-NOTE: Flint is not yet available as a package, so you need to manually download and include it in your project, and you must install the `firebase-admin` and `requests` python packages.
-
-The above snippet will create a new app version, add all files in the ./public directory (recursive directory tree) to that version, and deploy it. Progress is printed to the console like so:
+The above snippet will create a new app version, add all files in the `./public` directory (recursively, filtering by `ignore_regex`) to that version, and deploy it. Logs are printed to the console like so:
 ```
-Access token: XXXXXXXcp81
-Version: 96ab635551db9191
-
-[1/7 file_uploaded] /scripts/lib/sha256.js, b62a0e9f2e35abfdcd0606bfb09aeacaf017320a2dfd0f31dcc5cdc0222faa70
-[2/7 file_uploaded] /scripts/lib/firebase.js, 96b537e08b014f835ebed3bbd681d9f62f75cdba48b87926f423474b34f81f11
-[3/7 file_uploaded] /scripts/main.js, e131df7eb1a0d93f12a1ddd9ba5768c94ee192936c264072f943722df329f167
-[4/7 file_uploaded] /scripts/metadata.js, 8ed6ce5202a60c754676d13362409272dbcafdc702743fbb51434908d73176ed
-[5/7 file_uploaded] /static/style.css, f04ab9cf5508d1c97a1a8b7b6379a65f4cb45cd6f3a8c38fa4bff27c932cc2ac
-[6/7 file_uploaded] /static/metadata.json, f55c3093546826f29ab5b534a1b12bb817f09b2d3b4e476bbf696d6efed0f3d8
-[7/7 file_uploaded] /index.html, 5742e6746c14e846943e42d127b254e75d80800a64932e1b0ca9afec91f3aeaf
-
-[success] Deployed to example.web.app
+[version_created] sites/example-site/versions/5fe0860ba8caa67e
+[flint/file_specifier] ignoring .DS_Store (matches ignore patterns)
+[flint/file_specifier] ignoring .gitignore (matches ignore patterns)
+[flint/file_specifier] ignoring .git (matches ignore patterns)
+[flint/deploy: file_specifier_created] <FileSpecifier count=26, paths=('/index.html', '/index.min.html', '/static/style.min.css', '/scripts/main.js', ...)>
+[flint/deploy: version_files_populated] <FileUploadSpecifier upload_url=https://upload-firebasehosting.googleapis.com/upload/sites/example-site/versions/5fe0860ba8caa67e/files, count=3, paths=('index.min.html', 'index.html', 'static/style.css')>
+[flint/upload_files: uploaded_file] [1 / 3] index.min.html
+[flint/upload_files: uploaded_file] [2 / 3] index.html
+[flint/upload_files: uploaded_file] [3 / 3] static/style.css
+[flint/deploy: version_finalized] sites/example-site/versions/5fe0860ba8caa67e
+[flint/deploy: version_released] {'name': 'sites/example-site/releases/1779769450887000', 'version': ...}
 ```
+In the above example; Flint found 26 files in the `./public` directory, but only 3 of them were modified and were required by firebase.
+
+NOTE: Flint is not yet available as a package, so you need to manually download and include it in your project, and you must install the `google-api-python-client`, `google-auth` python packages.
