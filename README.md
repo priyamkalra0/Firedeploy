@@ -65,4 +65,6 @@ The above snippet will create a new app version, add all files in the `./public`
 ```
 In the above example; Flint found 7 files in the `./public` directory (after filtering), but only 3 of them were modified and were required to be uploaded to firebase.
 
-NOTE: Flint is not yet available as a package, so you need to manually download and include it in your project, and you must install the `google-api-python-client`, `google-auth` python packages.
+NOTE:
+  1. Flint uses [PEP 695](https://peps.python.org/pep-0695/) (Type Parameter Syntax) for type-annotated decorators, which requires Python 3.12 or newer.
+  2. Flint is not yet available as a package, so you need to manually download and include it in your project, and you must install the `google-api-python-client`, `google-auth` python packages.
