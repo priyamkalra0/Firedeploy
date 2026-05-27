@@ -5,8 +5,8 @@ import json, gzip, hashlib
 
 from .log import log # local
 
-StringFilterType = Callable[[str], bool]
-PathFilterType = Callable[[Path], bool]
+type StringFilterType = Callable[[str], bool]
+type PathFilterType = Callable[[Path], bool]
 DEFAULT_FILTERS = (lambda p: p.stem.startswith('.'),) # ignore hidden files and directories by default
 
 # https://firebase.google.com/docs/hosting/api-deploy#specify-files
