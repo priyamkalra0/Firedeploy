@@ -1,1 +1,1 @@
-from .flint import Flint, Credentials, DEFAULT_IGNORE_PATTERNS, SCOPES
+from .flint import Flint, Credentials, DEFAULT_FILTERS, SCOPES

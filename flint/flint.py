@@ -10,7 +10,7 @@ from typing import Iterable
 # local
 from .log import log
 from .error import wrap_exceptions
-from .files import FileSpecifier, FileUploadSpecifier, DEFAULT_IGNORE_PATTERNS
+from .files import FileSpecifier, FileUploadSpecifier, PathFilterType, DEFAULT_FILTERS
 
 SCOPES = ["https://www.googleapis.com/auth/firebase"]
 
@@ -44,7 +44,7 @@ class Flint():
             http=self.m_http
         )
 
-    def deploy(self, path: Path | str, ignore_regex: Iterable[str] = DEFAULT_IGNORE_PATTERNS) -> None:
+    def deploy(self, path: Path | str, filters: Iterable[PathFilterType] = DEFAULT_FILTERS) -> None:
         if isinstance(path, str): path = Path(path)
         
         err, version_name = self.create_new_version()
@@ -52,7 +52,7 @@ class Flint():
 
         log("[flint/deploy: version_created]", version_name)
         
-        err, f_spec = self.get_file_specifier(path, ignore_regex)
+        err, f_spec = self.get_file_specifier(path, filters)
         if f_spec is None: return log("[flint/deploy: failed_to_get_file_specifier]", err)
 
         log("[flint/deploy: file_specifier_created]", f"from path: \"{path}\"", f_spec)
@@ -103,8 +103,8 @@ class Flint():
         return version["name"]
     
     @wrap_exceptions
-    def get_file_specifier(self, path: Path, ignore_regex: Iterable[str] = DEFAULT_IGNORE_PATTERNS) -> FileSpecifier:
-        return FileSpecifier.from_directory(path, ignore_regex)
+    def get_file_specifier(self, path: Path, filters: Iterable[PathFilterType] = DEFAULT_FILTERS) -> FileSpecifier:
+        return FileSpecifier.from_directory(path, filters)
     
     @wrap_exceptions
     def populate_version_files(self, version_name: str, file_spec: FileSpecifier) -> FileUploadSpecifier:

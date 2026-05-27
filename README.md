@@ -6,7 +6,7 @@ Made using Google's Firebase hosting [API documentation](https://firebase.google
 You will need to generate a new private keyfile for the Firebase Admin SDK service account in your firebase project by clicking [here](https://console.firebase.google.com/u/0/project/_/settings/serviceaccounts).  See [this](https://firebase.google.com/docs/hosting/api-deploy#access-token) for more information.
 
 ```py
-from flint import Flint, Credentials, DEFAULT_IGNORE_PATTERNS
+from flint import Flint, Credentials, DEFAULT_FILTERS
 
 credentials = Credentials.from_service_account_info({
   "type": "service_account",
@@ -23,23 +23,46 @@ credentials = Credentials.from_service_account_info({
 })
 
 flint = Flint(credentials)
-flint.deploy("./public", ignore_regex=[*DEFAULT_IGNORE_PATTERNS, "data-archive"])
+flint.deploy("./public", filters=[
+    *DEFAULT_FILTERS,
+    lambda p: p.is_dir() and p.name == "data-archive", # ignore this directory
+    lambda p: p.name != "index.html" and p.is_file() and not p.stem.endswith(".min"), # ignore non-minified files except index.html
+])
 ```
 
-The above snippet will create a new app version, add all files in the `./public` directory (recursively, filtering by `ignore_regex`) to that version, and deploy it. Logs are printed to the console like so:
+The above snippet will create a new app version, add all files in the `./public` directory (recursively, filtering by `filters`) to that version, and deploy it. Logs are printed to the console like so:
 ```
-[flint/deploy: version_created] sites/example-site/versions/5fe0860ba8caa67e
+[flint/deploy: version_created] sites/example-site/versions/39a3bf0b3fe052a9
 [flint/file_specifier] ignoring .DS_Store (matches ignore patterns)
 [flint/file_specifier] ignoring .gitignore (matches ignore patterns)
+[flint/file_specifier] ignoring static/data-archive (matches ignore patterns)
+[flint/file_specifier] ignoring static/data.json (matches ignore patterns)
+[flint/file_specifier] ignoring static/style.css (matches ignore patterns)
+[flint/file_specifier] ignoring scripts/.DS_Store (matches ignore patterns)
+[flint/file_specifier] ignoring scripts/render.js (matches ignore patterns)
+[flint/file_specifier] ignoring scripts/metadata.js (matches ignore patterns)
+[flint/file_specifier] ignoring scripts/main.js (matches ignore patterns)
 [flint/file_specifier] ignoring .git (matches ignore patterns)
-[flint/deploy: file_specifier_created] <FileSpecifier count=26, paths=('/index.html', '/index.min.html', '/static/style.min.css', '/scripts/main.js', ...)>
-[flint/deploy: version_files_populated] <FileUploadSpecifier upload_url=https://upload-firebasehosting.googleapis.com/upload/sites/example-site/versions/5fe0860ba8caa67e/files, count=3, paths=('index.min.html', 'index.html', 'static/style.css')>
-[flint/upload_files: uploaded_file] [1 / 3] index.min.html
-[flint/upload_files: uploaded_file] [2 / 3] index.html
-[flint/upload_files: uploaded_file] [3 / 3] static/style.css
-[flint/deploy: version_finalized] sites/example-site/versions/5fe0860ba8caa67e
-[flint/deploy: version_released] {'name': 'sites/example-site/releases/1779769450887000', 'version': ...}
+[flint/deploy: file_specifier_created] from path: "public" <FileSpecifier count=7, paths={
+ /index.html: e2473562285733bddd6b92f0bc713b6de52d8d1fa680e5862018214f3a486a6e,
+ /static/style.min.css: a83d16553b4c700c32e4532f2a0400e1060c29349ff9a1ed81c67998de50be81,
+ /static/data.min.json: 1cc48ca7d5662b6f7ea566a37de0301b5265a379aa6559568d87609ffea47b0b,
+ /scripts/render.min.js: 68a45378a98ff45272172639cc09011330c114e10dd872f9fcec771e260085db,
+ /scripts/main.min.js: b78db4f46476093f3c01202433eeb32fc6d49208aec07f5135e0c45aa0ce2c14,
+ /scripts/lib/firebase.min.js: 2beaa7edc6b9e83cf6612a5c59417daae0ccf308b0fca27201bdc048468d2de1,
+ /scripts/metadata.min.js: 222ee0ceca80194a5ad855e346ff1246e7b0f5a47ce1a5c1caab54c7d8f04dd8
+}>
+[flint/deploy: version_files_populated] <FileUploadSpecifier count=3, paths={
+ /static/data.min.json: 1cc48ca7d5662b6f7ea566a37de0301b5265a379aa6559568d87609ffea47b0b,
+ /scripts/render.min.js: 68a45378a98ff45272172639cc09011330c114e10dd872f9fcec771e260085db,
+ /scripts/main.min.js: b78db4f46476093f3c01202433eeb32fc6d49208aec07f5135e0c45aa0ce2c14
+} upload_url=https://upload-firebasehosting.googleapis.com/upload/sites/example-site/versions/39a3bf0b3fe052a9/files>
+[flint/upload_files: uploaded_file] [1 / 3] /static/data.min.json
+[flint/upload_files: uploaded_file] [2 / 3] /scripts/render.min.js
+[flint/upload_files: uploaded_file] [3 / 3] /scripts/main.min.js
+[flint/deploy: version_finalized] sites/example-site/versions/39a3bf0b3fe052a9
+[flint/deploy: version_released] sites/example-site/releases/1779840916813000
 ```
-In the above example; Flint found 26 files in the `./public` directory, but only 3 of them were modified and were required by firebase.
+In the above example; Flint found 7 files in the `./public` directory (after filtering), but only 3 of them were modified and were required to be uploaded to firebase.
 
 NOTE: Flint is not yet available as a package, so you need to manually download and include it in your project, and you must install the `google-api-python-client`, `google-auth` python packages.
