@@ -12,12 +12,15 @@ from .log import log
 from .error import wrap_exceptions
 from .files import FileSpecifier, FileUploadSpecifier, PathFilterType, DEFAULT_FILTERS
 
-SCOPES = ["https://www.googleapis.com/auth/firebase"]
+DEFAULT_SCOPES = ["https://www.googleapis.com/auth/firebase"]
 
 class Flint():
     # Wraps around the Firebase Hosting REST API to provide a
     # simple interface for deploying static sites to Firebase Hosting.
     # https://firebase.google.com/docs/hosting/api-deploy
+
+    # Constants
+    DEFAULT_SCOPES = DEFAULT_SCOPES
 
     # The credentials to use for authentication, e.g. from a service account JSON file
     @property
@@ -29,13 +32,14 @@ class Flint():
     @property
     def site_id(self) -> str | None:
         return self.m_site_id 
+        
 
-    def __init__(self, credentials: Credentials, site_id: str | None = None):
+    def __init__(self, credentials: Credentials, site_id: str | None = None, scopes: Iterable[str] = DEFAULT_SCOPES) -> None:
         self.m_site_id = site_id or credentials.project_id
         assert self.site_id, \
             "One of `Flint.site_id` or `Flint.Credentials.project_id` must be provided!"
         
-        credentials = credentials.with_scopes(SCOPES)
+        credentials = credentials.with_scopes(scopes)
         
         self.m_credentials = credentials
         self.m_http = AuthorizedHttp(credentials)
