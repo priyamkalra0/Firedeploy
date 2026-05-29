@@ -20,6 +20,7 @@ class Flint():
     # https://firebase.google.com/docs/hosting/api-deploy
 
     # Constants
+    DEFAULT_FILTERS = DEFAULT_FILTERS
     DEFAULT_SCOPES = DEFAULT_SCOPES
 
     # The credentials to use for authentication, e.g. from a service account JSON file

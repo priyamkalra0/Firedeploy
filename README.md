@@ -6,7 +6,7 @@ Made using Google's Firebase hosting [API documentation](https://firebase.google
 You will need to generate a new private keyfile for the Firebase Admin SDK service account in your firebase project by clicking [here](https://console.firebase.google.com/u/0/project/_/settings/serviceaccounts).  See [this](https://firebase.google.com/docs/hosting/api-deploy#access-token) for more information.
 
 ```py
-from flint import Flint, Credentials, DEFAULT_FILTERS
+from flint import Flint, Credentials
 
 credentials = Credentials.from_service_account_info({
   "type": "service_account",
@@ -22,11 +22,15 @@ credentials = Credentials.from_service_account_info({
   "universe_domain": "googleapis.com"
 })
 
-flint = Flint(credentials)
-flint.deploy("./public", filters=[
-    *DEFAULT_FILTERS,
-    lambda p: p.is_dir() and p.name == "data-archive", # ignore this directory
-    lambda p: p.name != "index.html" and p.is_file() and not p.stem.endswith(".min"), # ignore non-minified files except index.html
+example_site = Flint(credentials)
+example_site.deploy("./public", filters=[
+    *Flint.DEFAULT_FILTERS, 
+    # ignore directory `data-archive`
+    lambda path: path.is_dir() and path.name == "data-archive",
+    # ignore all non-minified files except index.html
+    lambda path: path.is_file() \
+      and not path.stem.endswith(".min") \
+      and path.name != "index.html"
 ])
 ```
 

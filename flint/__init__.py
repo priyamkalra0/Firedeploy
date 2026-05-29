@@ -1,1 +1,1 @@
-from .flint import Flint, Credentials, DEFAULT_FILTERS
+from .flint import Flint, Credentials
